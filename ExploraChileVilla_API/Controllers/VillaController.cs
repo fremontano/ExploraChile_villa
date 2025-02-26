@@ -1,4 +1,5 @@
-﻿using ExploraChileVilla_API.Data;
+﻿using AutoMapper;
+using ExploraChileVilla_API.Data;
 using ExploraChileVilla_API.Models;
 using ExploraChileVilla_API.Models.Dto;
 using Microsoft.AspNetCore.JsonPatch;
@@ -18,22 +19,27 @@ namespace ExploraChileVilla_API.Controllers
         // _logger permite registrar mensajes de log relacionados con las acciones del controlador.
         private readonly ILogger<VillaController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
 
         // Inyeccion de dependencias para el logger, que permite registrar eventos y errores en el controlador.
-        public VillaController(ILogger<VillaController> logger, ApplicationDbContext context)
+        public VillaController(
+            ILogger<VillaController> logger, ApplicationDbContext context, IMapper mapper)
         {
             _logger = logger;
             _context = context;
+            _mapper = mapper;   
         }
 
 
         [HttpGet]
-        public  ActionResult<IEnumerable<VillaDto>> GetVillas()
+        public async  Task<ActionResult<IEnumerable<VillaDto>>> GetVillas()
         {
 
             _logger.LogInformation("Obtener todas las villas");
-            return Ok(_context.Villas.ToList());
+            IEnumerable<Villa> villaList = await _context.Villas.ToListAsync();
+
+            return Ok(_mapper.Map<IEnumerable<VillaDto>>(villaList));
         }
 
 
@@ -41,7 +47,7 @@ namespace ExploraChileVilla_API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<VillaDto> GetVillaById(int id)
+        public async Task<ActionResult<VillaDto>> GetVillaById(int id)
         {
             if (id == 0)
             {
@@ -49,14 +55,14 @@ namespace ExploraChileVilla_API.Controllers
                 return BadRequest();
             }
 
-            var villa = _context.Villas.FirstOrDefault(v => v.Id == id);
+            var villa = await _context.Villas.FirstOrDefaultAsync(v => v.Id == id);
 
             if (villa == null)
             {
                 return NotFound();
             }
 
-            return Ok( villa);
+            return Ok( _mapper.Map<VillaDto>(villa));
         }
 
 
@@ -66,7 +72,7 @@ namespace ExploraChileVilla_API.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<VillaDto> CreateVilla(VillaDto villaDto)
+        public async Task<ActionResult<VillaDto>>CreateVilla(VillaCreateDto villaCreteDto)
         {
             // Verifica si el modelo es valido.
             if (!ModelState.IsValid)
@@ -75,44 +81,45 @@ namespace ExploraChileVilla_API.Controllers
             }
 
 
-            if (_context.Villas.FirstOrDefault(v => v.Nombre.ToLower() == villaDto.Nombre.ToLower()) != null)
+            if (await _context.Villas.FirstOrDefaultAsync(v => v.Nombre.ToLower() == villaCreteDto.Nombre.ToLower()) != null)
             {
                 // Si ya existe una villa con el mismo nombre, agrega un error al ModelState.
                 ModelState.AddModelError("NombreExiste", "La villa con ese nombre ya existe");
                 return BadRequest(ModelState); 
             }
 
-            if (villaDto == null)
+            if (villaCreteDto == null)
             {
-                return BadRequest(villaDto);
+                return BadRequest(villaCreteDto);
             }
 
-            if (villaDto.Id > 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            // Usamos AutoMapper para mapear el DTO VillaCreateDto a la entidad Villa
+            //   // para evitar crear un nuevo modelo y pasar todas las propiedades lo mapeamos
+            Villa modelo = _mapper.Map<Villa>(villaCreteDto);
 
             //recibir un nuevo modelo
-            Villa modelo = new Villa()
-            {
-                Nombre = villaDto.Nombre,
-                Descripcion = villaDto.Descripcion,
-                Detalle = villaDto.Detalle,
-                Ocupantes = villaDto.Ocupantes,
-                Tarifa = villaDto.Tarifa,
-                MetrosCuadrados = villaDto.MetrosCuadrados,
-                Amenidades = villaDto.Amenidades,
-                ImagenUrl = villaDto.ImagenUrl
-            };
+            //Villa modelo = new Villa()
+            //{
+            //    Nombre = villaCreteDto.Nombre,
+            //    Descripcion = villaCreteDto.Descripcion,
+            //    Detalle = villaCreteDto.Detalle,
+            //    Ocupantes = villaCreteDto.Ocupantes,
+            //    Tarifa = villaCreteDto.Tarifa,
+            //    MetrosCuadrados = villaCreteDto.MetrosCuadrados,
+            //    Amenidades = villaCreteDto.Amenidades,
+            //    ImagenUrl = villaCreteDto.ImagenUrl
+            //};
 
 
 
 
-            _context.Villas.Add(modelo);
-            _context.SaveChanges();
+
+
+            await _context.Villas.AddAsync(modelo);
+           await _context.SaveChangesAsync();
 
             // Devuelve una respuesta 201 Created con la nueva villa y un enlace a la ruta "GetVilla" para obtener la villa por su Id.
-            return CreatedAtRoute("GetVilla", new { id = villaDto.Id }, villaDto);
+            return CreatedAtRoute("GetVilla", new { id = modelo.Id }, modelo);
 
         }
 
@@ -122,7 +129,7 @@ namespace ExploraChileVilla_API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult DeleteVilla(int id)
+        public  async Task<IActionResult> DeleteVilla(int id)
         {
 
             if (id == 0)
@@ -130,14 +137,14 @@ namespace ExploraChileVilla_API.Controllers
                 return BadRequest();
             }
 
-            var villa = _context.Villas.FirstOrDefault(x => x.Id == id);
+            var villa = await _context.Villas.FirstOrDefaultAsync(x => x.Id == id);
 
             if (villa == null) {
              return NotFound();
             };
 
             _context.Villas.Remove(villa);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -146,11 +153,11 @@ namespace ExploraChileVilla_API.Controllers
         [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateVilla(int id,[FromBody] VillaDto villaDto)
+        public async Task<IActionResult> UpdateVilla(int id,[FromBody] VillaUpdateDto villaUpdateDto)
         {
 
 
-            if (villaDto == null || id != villaDto.Id)
+            if (villaUpdateDto == null || id != villaUpdateDto.Id)
             {
                 return BadRequest();
             }
@@ -158,21 +165,12 @@ namespace ExploraChileVilla_API.Controllers
             var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
 
 
-            //crear un nuevo modelo y pasarles las propiedades
-            Villa modelo = new()
-            {
-                Id = villaDto.Id,
-                Nombre = villaDto.Nombre,
-                Descripcion = villaDto.Descripcion,
-                Detalle = villaDto.Detalle,
-                ImagenUrl = villaDto.ImagenUrl,
-                Ocupantes = villaDto.Ocupantes,
-                MetrosCuadrados = villaDto.MetrosCuadrados,
-                Amenidades = villaDto.Amenidades
-            };
+            // para evitar crear un nuevo modelo y pasar todas las propiedades lo mapeamos
+            Villa modelo = _mapper.Map<Villa>(villaUpdateDto);
+           
 
             _context.Villas.Update(modelo);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -182,7 +180,7 @@ namespace ExploraChileVilla_API.Controllers
         [HttpPatch("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateVillaPatch(int id, JsonPatchDocument<VillaDto> patchVillaDto)
+        public async Task<IActionResult> UpdateVillaPatch(int id, JsonPatchDocument<VillaUpdateDto> patchVillaDto)
         {
             if (patchVillaDto == null || id == 0)
             {
@@ -190,26 +188,15 @@ namespace ExploraChileVilla_API.Controllers
             }
 
             // Se obtiene la entidad original de la base de datos
-            var villa = _context.Villas.FirstOrDefault(x => x.Id == id);
+            var villa = await _context.Villas.FirstOrDefaultAsync(x => x.Id == id);
 
             if (villa == null)
             {
                 return NotFound();
             }
 
-            // Se crea un DTO (VillaDto) basado en la entidad obtenida
-            VillaDto villaDto = new()
-            {
-                Id = villa.Id,
-                Nombre = villa.Nombre,
-                Descripcion = villa.Descripcion,
-                Detalle = villa.Detalle,
-                Ocupantes = villa.Ocupantes,
-                Tarifa = villa.Tarifa,
-                ImagenUrl = villa.ImagenUrl,
-                MetrosCuadrados = villa.MetrosCuadrados,
-                Amenidades = villa.Amenidades
-            };
+            // Mapeo de la entidad Villa a un DTO VillaUpdateDto usando AutoMapper
+            VillaUpdateDto villaDto = _mapper.Map<VillaUpdateDto>(villa);
 
             // Se aplica el parche (modificaciones) al DTO en memoria
             patchVillaDto.ApplyTo(villaDto, ModelState);
@@ -219,17 +206,11 @@ namespace ExploraChileVilla_API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Se actualiza la entidad original con los cambios del DTO
-            villa.Nombre = villaDto.Nombre;
-            villa.Descripcion = villaDto.Descripcion;
-            villa.Detalle = villaDto.Detalle;
-            villa.Ocupantes = villaDto.Ocupantes;
-            villa.Tarifa = villaDto.Tarifa;
-            villa.ImagenUrl = villaDto.ImagenUrl;
-            villa.MetrosCuadrados = villaDto.MetrosCuadrados;
-            villa.Amenidades = villaDto.Amenidades;
+            // Mapeo inverso del DTO actualizado a la entidad Villa
+            _mapper.Map(villaDto, villa);
 
-            _context.SaveChanges(); 
+            // Guardar los cambios en la base de datos
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }

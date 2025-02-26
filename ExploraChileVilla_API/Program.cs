@@ -1,3 +1,4 @@
+using ExploraChileVilla_API;
 using ExploraChileVilla_API.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,10 +12,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //Agregar Servicios
-builder.Services.AddDbContext<ApplicationDbContext>(option =>
+
+// Configurar DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+// Registrar AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingConfig));
+
 
 var app = builder.Build();
 
