@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\ExploraChileVilla_API.props" />
+</Project>
