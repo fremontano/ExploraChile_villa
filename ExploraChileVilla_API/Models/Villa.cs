@@ -16,7 +16,6 @@ namespace ExploraChileVilla_API.Models
         public int MetrosCuadrados { get; set; }
         public string ImagenUrl { get; set; }
 
-        // Lista de Amenidades
         public string Amenidades { get; set; }
 
         // FechaCreacion y FechaActualizacion, Pueden omitirse si no son necesarias para el cliente, ya que son datos internos del servidor.

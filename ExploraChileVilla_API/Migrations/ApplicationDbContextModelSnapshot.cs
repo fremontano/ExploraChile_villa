@@ -22,6 +22,31 @@ namespace ExploraChileVilla_API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ExploraChileVilla_API.Models.NumeroVilla", b =>
+                {
+                    b.Property<int>("VillaNro")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DetalleEspecial")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VillaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("VillaNro");
+
+                    b.HasIndex("VillaId");
+
+                    b.ToTable("NumeroVillas");
+                });
+
             modelBuilder.Entity("ExploraChileVilla_API.Models.Villa", b =>
                 {
                     b.Property<int>("Id")
@@ -76,8 +101,8 @@ namespace ExploraChileVilla_API.Migrations
                             Amenidades = "Piscina, Wi-Fi, Estacionamiento",
                             Descripcion = "Una hermosa villa con vistas panorámicas y piscina privada.",
                             Detalle = "Detalle Mercedes",
-                            FechaActualizacion = new DateTime(2025, 2, 25, 11, 22, 5, 875, DateTimeKind.Local).AddTicks(1066),
-                            FechaCreacion = new DateTime(2025, 2, 25, 11, 22, 5, 875, DateTimeKind.Local).AddTicks(1023),
+                            FechaActualizacion = new DateTime(2025, 2, 28, 15, 53, 38, 463, DateTimeKind.Local).AddTicks(7232),
+                            FechaCreacion = new DateTime(2025, 2, 28, 15, 53, 38, 463, DateTimeKind.Local).AddTicks(7180),
                             ImagenUrl = "image_url",
                             MetrosCuadrados = 120,
                             Nombre = "Villa Las Mercedes",
@@ -90,14 +115,25 @@ namespace ExploraChileVilla_API.Migrations
                             Amenidades = "Wi-Fi, Aire acondicionado, Jardín",
                             Descripcion = "Villa exclusiva frente al mar, ideal para familias.",
                             Detalle = "Villa con vista al mar",
-                            FechaActualizacion = new DateTime(2025, 2, 25, 11, 22, 5, 875, DateTimeKind.Local).AddTicks(1071),
-                            FechaCreacion = new DateTime(2025, 2, 25, 11, 22, 5, 875, DateTimeKind.Local).AddTicks(1069),
+                            FechaActualizacion = new DateTime(2025, 2, 28, 15, 53, 38, 463, DateTimeKind.Local).AddTicks(7237),
+                            FechaCreacion = new DateTime(2025, 2, 28, 15, 53, 38, 463, DateTimeKind.Local).AddTicks(7235),
                             ImagenUrl = "image_url_2",
                             MetrosCuadrados = 150,
                             Nombre = "Villa El Mar",
                             Ocupantes = 2,
                             Tarifa = 300.0
                         });
+                });
+
+            modelBuilder.Entity("ExploraChileVilla_API.Models.NumeroVilla", b =>
+                {
+                    b.HasOne("ExploraChileVilla_API.Models.Villa", "Villa")
+                        .WithMany()
+                        .HasForeignKey("VillaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Villa");
                 });
 #pragma warning restore 612, 618
         }

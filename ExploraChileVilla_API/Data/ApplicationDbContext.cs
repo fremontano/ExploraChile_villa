@@ -11,6 +11,7 @@ namespace ExploraChileVilla_API.Data
         }
 
         public DbSet<Villa> Villas { get; set; }
+        public DbSet<NumeroVilla> NumeroVillas { get; set; }
 
 
         //Llenar registros en la tabla villa
@@ -26,7 +27,7 @@ namespace ExploraChileVilla_API.Data
                     Detalle = "Detalle Mercedes",
                     MetrosCuadrados = 120,
                     ImagenUrl = "image_url",
-                    Amenidades = "Piscina, Wi-Fi, Estacionamiento", 
+                    Amenidades = "Piscina, Wi-Fi, Estacionamiento",
                     Descripcion = "Una hermosa villa con vistas panorámicas y piscina privada.",
                     FechaCreacion = DateTime.Now,
                     FechaActualizacion = DateTime.Now
@@ -40,14 +41,14 @@ namespace ExploraChileVilla_API.Data
                     Detalle = "Villa con vista al mar",
                     MetrosCuadrados = 150,
                     ImagenUrl = "image_url_2",
-                    Amenidades = "Wi-Fi, Aire acondicionado, Jardín", 
+                    Amenidades = "Wi-Fi, Aire acondicionado, Jardín",
                     Descripcion = "Villa exclusiva frente al mar, ideal para familias.",
                     FechaCreacion = DateTime.Now,
                     FechaActualizacion = DateTime.Now
                 }
             );
-        }
 
+        }
 
     }
 }

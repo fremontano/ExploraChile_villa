@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ExploraChileVilla_API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aa3635cb34ec64fe295db4e163b4444fb5d6abcd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e8f63d6c69ac27933698f85c76cf75f0e5151349")]
 [assembly: System.Reflection.AssemblyProductAttribute("ExploraChileVilla_API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ExploraChileVilla_API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
